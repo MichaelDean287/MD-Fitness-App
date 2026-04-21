@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fitness Guide">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d1018">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon.png">
+<title>Michael's Fitness Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --gold: #c9a96e;
+    --gold-dim: rgba(201,169,110,0.15);
+    --gold-border: rgba(201,169,110,0.25);
+    --bg: #0d1018;
+    --surface: #13161f;
+    --surface2: #1a1f2e;
+    --border: #222636;
+    --text: #e8e0d4;
+    --text-dim: #8b8070;
+    --text-muted: #4a5068;
+    --red: #ff6b6b;
+    --red-bg: rgba(255,80,80,0.12);
+    --red-border: rgba(255,80,80,0.28);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* INSTALL BANNER */
+  #install-banner {
+    display: none;
+    background: var(--gold-dim);
+    border-bottom: 1px solid var(--gold-border);
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--gold);
+  }
+  #install-banner.show { display: block; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(160deg, #1a1f2e 0%, #0d1018 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 20px 20px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* MAIN TABS */
+  .tabs {
+    display: flex;
+    background: #0f1219;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 13px 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* PHASE PILLS */
+  .phase-row {
+    display: flex;
+    gap: 8px;
+    padding: 14px 16px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .phase-row::-webkit-scrollbar { display: none; }
+  .phase-pill {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .phase-pill.active { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
+
+  /* PHASE HEADER */
+  .phase-header {
+    margin: 14px 16px 12px;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+  .phase-header-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    color: var(--gold);
+    margin-bottom: 3px;
+  }
+  .phase-header-sub { font-size: 12px; color: var(--text-dim); font-style: italic; }
+
+  /* SESSION ACCORDION */
+  .sessions { padding: 0 16px; }
+  .session { margin-bottom: 10px; border-radius: 10px; overflow: hidden; }
+
+  .session-btn {
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .session-btn.open { background: var(--surface2); border-radius: 10px 10px 0 0; border-bottom-color: transparent; }
+
+  .session-chevron { color: var(--gold); font-size: 20px; line-height: 1; transition: transform 0.2s; }
+
+  /* EXERCISE LIST */
+  .exercises { border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; display: none; }
+  .exercises.open { display: block; }
+
+  .exercise-row {
+    padding: 13px 16px;
+    border-bottom: 1px solid #181c28;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .exercise-row:last-child { border-bottom: none; }
+  .exercise-row:nth-child(even) { background: #111420; }
+  .exercise-row:nth-child(odd) { background: var(--surface); }
+
+  .exercise-info { flex: 1; min-width: 0; }
+  .exercise-name { font-size: 14px; color: var(--text); margin-bottom: 4px; font-weight: 500; }
+  .exercise-sets {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin-bottom: 4px;
+  }
+  .exercise-notes { font-size: 12px; color: var(--text-muted); font-style: italic; line-height: 1.4; }
+
+  .watch-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 11px;
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    border-radius: 7px;
+    color: var(--red);
+    text-decoration: none;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+
+  .footer-note {
+    margin: 10px 16px 0;
+    padding: 13px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+</style>
+</head>
+<body>
+
+<div id="install-banner">
+  📲 Tap the Share button below then "Add to Home Screen" to install this app
+</div>
+
+<div class="header">
+  <div class="header-eyebrow">Michael's Programme</div>
+  <h1>Fitness & Restoration Guide</h1>
+  <div class="header-sub">Body as temple — strength through stewardship</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('resistance', this)">💪 Resistance Training</button>
+  <button class="tab-btn" onclick="switchTab('stretching', this)">🧘 Stretching</button>
+</div>
+
+<!-- RESISTANCE SECTION -->
+<div id="resistance" class="section active">
+  <div class="phase-row">
+    <button class="phase-pill active" onclick="switchPhase('resistance', 0, this)">Phase 1 — Home</button>
+    <button class="phase-pill" onclick="switchPhase('resistance', 1, this)">Phase 2 — Gym</button>
+  </div>
+
+  <div class="phase-content" id="resistance-phase-0">
+    <div class="phase-header">
+      <div class="phase-header-title">Phase 1 — Home Foundation</div>
+      <div class="phase-header-sub">Weeks 1–2 · 30–40 min · 3–4 days/week</div>
+    </div>
+    <div class="sessions">
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Session A — Push / Hinge <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Wall / Floor Push-ups</div><div class="exercise-sets">3 × 10–15</div><div class="exercise-notes">Start on wall if needed</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=IODxDxX7oi4" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Glute Bridges</div><div class="exercise-sets">3 × 15</div><div class="exercise-notes">Squeeze glutes at top</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=OUgsJ8-Vi0E" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Superman Holds</div><div class="exercise-sets">3 × 10</div><div class="exercise-notes">Great for upper back</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=z6PJMT2y8GQ" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Bodyweight Squats</div><div class="exercise-sets">3 × 15</div><div class="exercise-notes">Knees track over toes</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=aclHkVaku9U" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Chin Tucks (wall)</div><div class="exercise-sets">2 × 10</div><div class="exercise-notes">Directly addresses neck stiffness</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=wQylqaCl8Zo" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Session B — Pull / Hinge <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Door-frame / Band Rows</div><div class="exercise-sets">3 × 12</div><div class="exercise-notes">Keep shoulders down</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=GZbfZ033f74" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Single-leg Romanian Deadlift</div><div class="exercise-sets">3 × 10 each side</div><div class="exercise-notes">Bodyweight, hinge at hip</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=vFDdSBBEeGg" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Dead Bug</div><div class="exercise-sets">3 × 8</div><div class="exercise-notes">Core stability essential</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=4XLEnwUr1d8" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Side-lying Clamshells</div><div class="exercise-sets">3 × 15</div><div class="exercise-notes">Activates glute medius — key for ITB</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=SL6W0YSTMOE" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-content" id="resistance-phase-1" style="display:none">
+    <div class="phase-header">
+      <div class="phase-header-title">Phase 2 — Gym Routine</div>
+      <div class="phase-header-sub">Week 3 onwards · Upper/Lower Split</div>
+    </div>
+    <div class="sessions">
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Upper Body Day (Mon / Thu) <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Seated Cable Row</div><div class="exercise-sets">3 × 10–12</div><div class="exercise-notes">Priority for posture</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=GZbfZ033f74" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Dumbbell Chest Press</div><div class="exercise-sets">3 × 10–12</div><div class="exercise-notes">Start moderate weight</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=QsYre__-aro" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Lat Pulldown</div><div class="exercise-sets">3 × 10–12</div><div class="exercise-notes">Builds the back triangle</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=CAwf7n6Luuc" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Dumbbell Shoulder Press</div><div class="exercise-sets">3 × 10</div><div class="exercise-notes">Seated initially</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=qEwKCR5JCog" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Face Pulls (cable)</div><div class="exercise-sets">3 × 15</div><div class="exercise-notes">Best for neck/upper back — never skip</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=rep-qVOkqgk" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Dumbbell Bicep Curl</div><div class="exercise-sets">2 × 12</div><div class="exercise-notes">Controlled tempo</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=ykJmrZ5v0Oo" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Tricep Pushdown</div><div class="exercise-sets">2 × 12</div><div class="exercise-notes">Cable or band</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=2-LAMcpzODU" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Lower Body Day (Tue / Fri) <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Goblet Squat</div><div class="exercise-sets">3 × 10–12</div><div class="exercise-notes">Safer start than barbell</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=MxsFDJCzmjg" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Romanian Deadlift (dumbbell)</div><div class="exercise-sets">3 × 10</div><div class="exercise-notes">Hamstrings + lower back</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=JCXUYuzwNrM" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Leg Press</div><div class="exercise-sets">3 × 12</div><div class="exercise-notes">Build confidence before barbell squats</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=IZxyjW7MPJQ" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Walking Lunges</div><div class="exercise-sets">3 × 10 each leg</div><div class="exercise-notes">Controlled, upright torso</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=L8fvypPrzzs" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Leg Curl Machine</div><div class="exercise-sets">3 × 12</div><div class="exercise-notes">Full range of motion</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=1Tq3QdYUuHs" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Calf Raises</div><div class="exercise-sets">3 × 15</div><div class="exercise-notes">Slow eccentric down</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=-M4-G8p1fCI" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Plank</div><div class="exercise-sets">3 × 30–45 sec</div><div class="exercise-notes">Carries over to squash</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=ASdvN_XEl_c" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-note">💡 Tap any session to expand. Each exercise links to a demonstration video. Start lighter than your instinct — technique before load.</div>
+</div>
+
+<!-- STRETCHING SECTION -->
+<div id="stretching" class="section">
+  <div class="phase-row">
+    <button class="phase-pill active" onclick="switchPhase('stretching', 0, this)">15-Minute Routine</button>
+    <button class="phase-pill" onclick="switchPhase('stretching', 1, this)">25-Minute Routine</button>
+  </div>
+
+  <div class="phase-content" id="stretching-phase-0">
+    <div class="phase-header">
+      <div class="phase-header-title">15-Minute Routine</div>
+      <div class="phase-header-sub">Core daily routine — best post-workout or evening</div>
+    </div>
+    <div class="sessions">
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Upper Body & Neck · 5 min <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Chin Tuck Stretch</div><div class="exercise-sets">1 min</div><div class="exercise-notes">Draw chin back, hold 10 sec, repeat</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=wQylqaCl8Zo" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Levator Scapulae Stretch</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Ear to shoulder, nose toward armpit</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=gOZEfPYMUgQ" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Doorway Chest Stretch</div><div class="exercise-sets">1 min</div><div class="exercise-notes">Arms at 90° on frame, lean through</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=J4OKGmFpqnA" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Thoracic Rotation (seated)</div><div class="exercise-sets">1 min</div><div class="exercise-notes">Arms crossed, rotate left and right</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=zqckDOuqvqA" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Hips, Hamstrings & ITB · 7 min <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">90/90 Hip Stretch</div><div class="exercise-sets">1.5 min each side</div><div class="exercise-notes">Best single hip opener</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=v4wXOSqktM8" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Standing ITB / TFL Stretch</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Cross leg behind, lean hips out</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=zJOBCFCgXLg" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Kneeling Hip Flexor Stretch</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Towel under knee, shift hips forward</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=YQmpO9VT2X4" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Supine Hamstring Stretch</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Use towel/belt — don't force</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=52PqhoDdRI0" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Cool-down & Spinal Release · 3 min <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Child's Pose</div><div class="exercise-sets">1 min</div><div class="exercise-notes">Arms forward, decompress the spine</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=2MJGg-dUKh0" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Supine Spinal Twist</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Knee across body, arms wide</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=Lm7ooQCXuKA" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-content" id="stretching-phase-1" style="display:none">
+    <div class="phase-header">
+      <div class="phase-header-title">25-Minute Routine</div>
+      <div class="phase-header-sub">Full programme — recommended as your standard</div>
+    </div>
+    <div class="sessions">
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Warm-up Mobility Flow · 2 min <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Cat / Cow</div><div class="exercise-sets">45 sec</div><div class="exercise-notes">Slow, full range — sets up whole back</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=kqnua4rHVVA" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">World's Greatest Stretch</div><div class="exercise-sets">45 sec — 3 reps each side</div><div class="exercise-notes">Lunge + rotation — worth learning well</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=woPtfRMnKQE" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Neck Rolls</div><div class="exercise-sets">30 sec</div><div class="exercise-notes">Half-circles only — never full backward</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=Z5pQaIEFmGU" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Upper Body & Neck · 6 min <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Chin Tuck Stretch</div><div class="exercise-sets">1 min</div><div class="exercise-notes">Foundation for neck health</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=wQylqaCl8Zo" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Levator Scapulae Stretch</div><div class="exercise-sets">90 sec each side</div><div class="exercise-notes">Longer hold — your neck warrants it</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=gOZEfPYMUgQ" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Doorway Chest Stretch</div><div class="exercise-sets">1 min</div><div class="exercise-notes">Arms at 90° then 120° — two positions</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=J4OKGmFpqnA" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Thoracic Rotation (seated)</div><div class="exercise-sets">1 min</div><div class="exercise-notes">Slow and controlled</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=zqckDOuqvqA" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Thread the Needle</div><div class="exercise-sets">45 sec each side</div><div class="exercise-notes">On hands/knees — slide arm under body</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=qNG0HnfWEWw" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Hips, Hamstrings & ITB · 12 min <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">90/90 Hip Stretch</div><div class="exercise-sets">90 sec each side</div><div class="exercise-notes">Settle in progressively</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=v4wXOSqktM8" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Pigeon Pose</div><div class="exercise-sets">90 sec each side</div><div class="exercise-notes">Deepest hip opener — prop hip if needed</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=QLEMiTEjAVE" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Standing ITB / TFL Stretch</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Longer hold than 15-min version</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=zJOBCFCgXLg" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Kneeling Hip Flexor + Reach</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Add overhead reach + side lean</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=YQmpO9VT2X4" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Supine Hamstring + Dorsiflexion</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Pull toes toward you at end of hold</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=52PqhoDdRI0" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+      <div class="session">
+        <button class="session-btn" onclick="toggleSession(this)">Cool-down & Release · 5 min <span class="session-chevron">+</span></button>
+        <div class="exercises">
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Supine Spinal Twist</div><div class="exercise-sets">1 min each side</div><div class="exercise-notes">Let gravity do the work</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=Lm7ooQCXuKA" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Legs Up the Wall</div><div class="exercise-sets">2 min</div><div class="exercise-notes">Shuffle close to wall, legs straight up</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=S-WqJiRMEMI" target="_blank">▶ Watch</a></div>
+          <div class="exercise-row"><div class="exercise-info"><div class="exercise-name">Child's Pose</div><div class="exercise-sets">1 min</div><div class="exercise-notes">Stillness to finish</div></div><a class="watch-btn" href="https://www.youtube.com/watch?v=2MJGg-dUKh0" target="_blank">▶ Watch</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-note">💡 Hold each stretch 30–60 sec. Breathe slowly and exhale into the stretch. Consistency daily beats occasional intense sessions.</div>
+</div>
+
+<script>
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+
+  // Show install banner on iOS if not already installed
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone;
+  if (isIOS && !isStandalone) {
+    document.getElementById('install-banner').classList.add('show');
+  }
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function switchPhase(section, index, btn) {
+    document.querySelectorAll('#' + section + ' .phase-content').forEach(c => c.style.display = 'none');
+    document.getElementById(section + '-phase-' + index).style.display = 'block';
+    btn.closest('.phase-row').querySelectorAll('.phase-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function toggleSession(btn) {
+    const exercises = btn.nextElementSibling;
+    const chevron = btn.querySelector('.session-chevron');
+    const isOpen = exercises.classList.contains('open');
+    exercises.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+    chevron.textContent = isOpen ? '+' : '−';
+  }
+</script>
+</body>
+</html>
